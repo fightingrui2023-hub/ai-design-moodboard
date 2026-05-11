@@ -61,17 +61,40 @@ const mockTerms: DesignTerm[] = [
   { id: '50', label: 'Rhythm 4x Grid',                category: 'spacing' },
 ];
 
-const pexelsImages = [
-  'https://images.pexels.com/photos/3266700/pexels-photo-3266700.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/1097930/pexels-photo-1097930.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/1772123/pexels-photo-1772123.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/1105665/pexels-photo-1105665.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/60504/pexels-photo-60504.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/325576/pexels-photo-325576.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/196645/pexels-photo-196645.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/696218/pexels-photo-696218.jpeg?auto=compress&cs=tinysrgb&w=400',
-  'https://images.pexels.com/photos/911758/pexels-photo-911758.jpeg?auto=compress&cs=tinysrgb&w=400',
+function createLocalMockImage(title: string, startColor: string, endColor: string): string {
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${startColor}" />
+      <stop offset="100%" stop-color="${endColor}" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#g)" />
+  <circle cx="680" cy="120" r="80" fill="rgba(255,255,255,0.15)" />
+  <circle cx="120" cy="500" r="120" fill="rgba(255,255,255,0.12)" />
+  <text x="60" y="100" fill="rgba(255,255,255,0.95)" font-size="42" font-family="Arial, sans-serif" font-weight="700">
+    ${title}
+  </text>
+  <text x="60" y="148" fill="rgba(255,255,255,0.85)" font-size="22" font-family="Arial, sans-serif">
+    Local mock image (offline safe)
+  </text>
+</svg>`.trim();
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+const localMockImages = [
+  createLocalMockImage('Dashboard Concept', '#94a3b8', '#f59e0b'),
+  createLocalMockImage('Landing Hero', '#0ea5e9', '#22c55e'),
+  createLocalMockImage('Mobile UI Flow', '#a78bfa', '#ec4899'),
+  createLocalMockImage('Card Layout Study', '#fb7185', '#f97316'),
+  createLocalMockImage('Typography System', '#06b6d4', '#14b8a6'),
+  createLocalMockImage('Color Exploration', '#f59e0b', '#84cc16'),
+  createLocalMockImage('Interaction Notes', '#10b981', '#3b82f6'),
+  createLocalMockImage('Component Library', '#8b5cf6', '#6366f1'),
+  createLocalMockImage('Spacing Rhythm', '#f43f5e', '#14b8a6'),
+  createLocalMockImage('Material Moodboard', '#64748b', '#a855f7'),
 ];
 
 function pickTerms(count: number, offset: number): DesignTerm[] {
@@ -86,7 +109,7 @@ function pickTerms(count: number, offset: number): DesignTerm[] {
 function createEntry(id: string, imageIndex: number, termOffset: number, termCount: number): ImageEntry {
   return {
     id,
-    imageUrl: pexelsImages[imageIndex % pexelsImages.length],
+    imageUrl: localMockImages[imageIndex % localMockImages.length],
     terms: pickTerms(termCount, termOffset),
     note: '',
     createdAt: new Date(),

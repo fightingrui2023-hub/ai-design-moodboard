@@ -1,18 +1,33 @@
 import { useMemo, useState } from 'react';
-import { ImageEntry } from '../types';
+import { DesignCategory, DesignTerm, ImageEntry } from '../types';
 import { DesignTermTag } from './DesignTermTag';
 import { StickyNote, MoreHorizontal } from 'lucide-react';
 
 interface Props {
   entry: ImageEntry;
+  onUpdateEntry: (entryId: string, patch: Partial<Pick<ImageEntry, 'terms' | 'note'>>) => void;
+  onOpenDetail: (entryId: string) => void;
 }
 
-export function ImageCard({ entry }: Props) {
+const categories: DesignCategory[] = [
+  'layout',
+  'component',
+  'typography',
+  'color',
+  'material',
+  'hierarchy',
+  'interaction',
+  'spacing',
+];
+
+export function ImageCard({ entry, onUpdateEntry, onOpenDetail }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const [newTagLabel, setNewTagLabel] = useState('');
+  const [newTagCategory, setNewTagCategory] = useState<DesignCategory>('component');
 
   const representativeTerms = useMemo(() => {
     const pickedCategories = new Set<string>();
-    const picked = [];
+    const picked: DesignTerm[] = [];
 
     for (const term of entry.terms) {
       if (!pickedCategories.has(term.category)) {
@@ -27,6 +42,24 @@ export function ImageCard({ entry }: Props) {
 
   const hiddenCount = Math.max(0, entry.terms.length - representativeTerms.length);
   const pinColors = ['bg-fuchsia-400', 'bg-amber-400', 'bg-sky-400'];
+
+  const addTag = () => {
+    const label = newTagLabel.trim();
+    if (!label) return;
+
+    const nextTerm: DesignTerm = {
+      id: `term-${Date.now()}`,
+      label,
+      category: newTagCategory,
+    };
+
+    onUpdateEntry(entry.id, { terms: [...entry.terms, nextTerm] });
+    setNewTagLabel('');
+  };
+
+  const removeTag = (termId: string) => {
+    onUpdateEntry(entry.id, { terms: entry.terms.filter((term) => term.id !== termId) });
+  };
 
   return (
     <div className="group relative rounded-xl overflow-hidden bg-white border border-stone-200/80 shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] transition-all duration-200">
@@ -72,16 +105,70 @@ export function ImageCard({ entry }: Props) {
             <p className="text-[10px] text-stone-400 mb-1.5">全部关键词</p>
             <div className="flex flex-wrap gap-1">
               {entry.terms.map((term) => (
-                <DesignTermTag key={term.id} term={term} size="sm" />
+                <span key={term.id} className="inline-flex items-center">
+                  <DesignTermTag term={term} size="sm" />
+                  <button
+                    onClick={() => removeTag(term.id)}
+                    className="ml-0.5 rounded-full bg-stone-200/80 w-4 h-4 text-[10px] leading-none text-stone-500 hover:bg-stone-300/80"
+                    aria-label="Remove tag"
+                  >
+                    x
+                  </button>
+                </span>
               ))}
+            </div>
+            <div className="mt-2 flex items-center gap-1.5">
+              <input
+                value={newTagLabel}
+                onChange={(e) => setNewTagLabel(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                className="flex-1 rounded-md border border-stone-200 px-2 py-1 text-[11px] text-stone-700 outline-none focus:border-amber-300"
+                placeholder="添加关键词"
+              />
+              <select
+                value={newTagCategory}
+                onChange={(e) => setNewTagCategory(e.target.value as DesignCategory)}
+                className="rounded-md border border-stone-200 px-1.5 py-1 text-[10px] text-stone-600 bg-white"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={addTag}
+                className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-medium text-amber-700 hover:bg-amber-100"
+              >
+                添加
+              </button>
             </div>
           </div>
         )}
 
-        <button className="flex items-center gap-1 text-[10px] text-stone-400 hover:text-stone-500 transition-colors">
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-1 text-[10px] text-stone-400">
           <StickyNote size={10} />
           <span>贴纸备注</span>
-        </button>
+          </label>
+          <button
+            onClick={() => onOpenDetail(entry.id)}
+            className="text-[10px] rounded-md border border-stone-200 bg-white px-2 py-0.5 text-stone-500 hover:bg-stone-100"
+          >
+            详情
+          </button>
+        </div>
+        <input
+          value={entry.note ?? ''}
+          onChange={(e) => onUpdateEntry(entry.id, { note: e.target.value })}
+          className="w-full rounded-md border border-stone-200/80 bg-white px-2 py-1 text-[11px] text-stone-600 outline-none focus:border-amber-300"
+          placeholder="写点灵感备注..."
+        />
       </div>
     </div>
   );
